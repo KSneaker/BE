@@ -90,6 +90,19 @@ exports.getImageProduct = (req, res) => {
     });
 }
 
+exports.deleteImageProduct = (req, res) => {
+    const { filename } = req.params
+    // console.log(filename)
+    let sql = `delete from galery where thumbnail = ?`;
+    con.query(sql, filename, (err, response) => {
+        if (err) {
+            res.send({ status: "error", message: err });
+        } else {
+            res.send({ status: "success", data: response });
+        }
+    });
+}
+
 
 exports.product = (req, res) => {
     const { id } = req.params;

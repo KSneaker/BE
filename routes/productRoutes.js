@@ -9,6 +9,7 @@ productRouter.get("", productController.allProducts);
 productRouter.post("", authMiddleware.isAuth, productController.addProduct);
 productRouter.post("/image", productController.addImageProduct);
 productRouter.get("/image", productController.getImageProduct);
+productRouter.delete("/image/:filename", productController.deleteImageProduct);
 productRouter.get("/:id", productController.product);
 productRouter.put("/:id", productController.updateProduct);
 productRouter.delete("/:id", productController.deleteProduct);

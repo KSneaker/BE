@@ -22,7 +22,9 @@ const wishlistRouter = require("./routes/wishlistRoutes");
 const ordersRouter = require("./routes/ordersRoutes");
 const voucherRouter = require("./routes/voucherRoutes");
 const paymentRouter = require("./routes/paymentRoutes");
-
+const fs = require('fs')
+const { promisify } = require('util')
+const unlinkAsync = promisify(fs.unlink)
 const { createServer } = require("http");
 const { Server } = require("socket.io");
 
@@ -84,13 +86,21 @@ app.post('/uploadMultiple', upload.array('image', 10), (req, res) => {
   // res.json({ filename: filename });
   res.send(filename);
 });
-
 app.get('/image/:filename', (req, res) => {
   const filename = req.params.filename;
   const imagePath = path.join(__dirname, 'uploads', filename);
   res.sendFile(imagePath);
 });
-
+app.delete('/image/:filename', (req, res) => {
+  const filename = req.params.filename;
+  fs.unlink(`uploads/${filename}`, (err) => {
+    if (err) {
+      res.send({ status: err });
+    } else {
+      res.send({ status: "success" });
+    }
+  });
+});
 app
   .route("/user")
   .get(authMiddleware.isAuth, function (req, res) {
