@@ -19,35 +19,6 @@ exports.checkVoucher = (req, res) => {
         }
     });
 };
-exports.checkVoucher2 = (req, res) => {
-    const discountCode = req.params.code;
-    const brandName = req.params.brand;
-
-    connection.query(
-        'SELECT discounts.*, GROUP_CONCAT(brands.name) AS applicable_brands ' +
-        'FROM discounts ' +
-        'JOIN discount_brands ON discounts.id = discount_brands.discount_id ' +
-        'JOIN brands ON discount_brands.brand_id = brands.id ' +
-        'WHERE discounts.code = ?',
-        [discountCode],
-        (err, results) => {
-            if (err) {
-                res.status(500).json({ error: 'Internal Server Error' });
-            } else {
-                if (results.length > 0) {
-                    const applicableBrands = results[0].applicable_brands.split(',');
-                    if (applicableBrands.includes(brandName)) {
-                        res.json({ isValid: true, discount: results[0] });
-                    } else {
-                        res.json({ isValid: false, message: 'Discount not applicable for this brand.' });
-                    }
-                } else {
-                    res.json({ isValid: false, message: 'Invalid discount code.' });
-                }
-            }
-        }
-    );
-}
 exports.getAllVouchers = (req, res) => {
     const sql = 'SELECT * FROM voucher';
     con.query(sql, (err, response) => {

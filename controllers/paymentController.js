@@ -19,7 +19,7 @@ exports.createPaymentUrl = function (req, res, next) {
     let secretKey = config.get('vnp_HashSecret');
     let vnpUrl = config.get('vnp_Url');
     let returnUrl = config.get('vnp_ReturnUrl');
-    let orderId = `KS${moment(date).format('YYMMDDHHmmss')}`;
+    let orderId = req.body.order_code;
     let amount = req.body.amount;
     let bankCode = req.body.bankCode;
 

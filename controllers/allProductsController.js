@@ -2,8 +2,7 @@ const { db } = require("../db");
 const con = db();
 exports.allHot = (req, res) => {
     let sql =
-        `SELECT product.id, product.title, product.price, product.discount, product.thumbnail, product.description, category.name as category FROM product,category where product.category_id = category.id and product.discount >=50;`
-
+        ` SELECT product.id, product.title, product.price, product.discount, product.thumbnail, product.description, category.name as category, count(product.id) as count  FROM product join category on product.category_id = category.id join order_details on product.id = order_details.product_id group by  product.id order by(count(product.id)) DESC `
     con.query(sql, (err, response) => {
         if (err) {
             res.send({ status: "error", message: err });

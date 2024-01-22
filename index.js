@@ -5,6 +5,7 @@ const app = express();
 const multer = require("multer");
 const path = require("path");
 const deleteAllFilesInDir = require("./utils/deleteFile");
+const moment = require('moment');
 const { db } = require("./db");
 const authRouter = require("./routes/authRoutes");
 const dotenv = require("dotenv");
@@ -21,29 +22,75 @@ const wishlistRouter = require("./routes/wishlistRoutes");
 const ordersRouter = require("./routes/ordersRoutes");
 const voucherRouter = require("./routes/voucherRoutes");
 const paymentRouter = require("./routes/paymentRoutes");
+
+const { createServer } = require("http");
+const { Server } = require("socket.io");
+
+
 app.use(express.json());
 const port = process.env.PORT || 8080;
 
 const con = db();
-var storage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    cb(null, "images");
-  },
-  filename: function (req, file, cb) {
-    cb(
-      null,
-      file.fieldname + "-" + Date.now() + path.extname(file.originalname)
-    );
-  },
-});
-const upload = multer({ storage });
+
 dotenv.config();
-app.use(bodyParser.urlencoded({ extended: false }));
-app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: true, limit: '200mb' }));
+app.use(bodyParser.json({ limit: '200mb' }));
 app.use(cors());
-app.listen(80, function () {
+
+const httpServer = createServer(app);
+const io = new Server(httpServer, {
+  cors: {
+    origin: 'http://localhost:3000',
+    methods: ["GET", "POST"]
+  }
+  /* options */
+});
+
+io.on("connection", (socket) => {
+  console.log(`connected: ${socket.id}`)
+  socket.on("disconnect", () => {
+    console.log("disconnect", socket.id)
+  })
+});
+
+httpServer.listen(80, function () {
   console.log("CORS-enabled web server listening on port 80");
 });
+// app.listen(80, function () {
+//   console.log("CORS-enabled web server listening on port 80");
+// });
+
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, 'uploads/');
+  },
+
+  filename: (req, file, cb) => {
+    cb(null, file.fieldname + '-' + moment().format('YYYYMMDDHHmmss') + path.extname(file.originalname));
+  },
+});
+const upload = multer({ storage: storage });
+
+app.post('/upload', upload.single('image'), (req, res) => {
+  const { filename } = req.file;
+  // const imagePath = path.join(__dirname, '/uploads/', filename);
+  // res.json({ filename: filename });
+  res.send(filename);
+});
+app.post('/uploadMultiple', upload.array('image', 10), (req, res) => {
+  const filename = req.files;
+  console.log(req.file)
+  // const imagePath = path.join(__dirname, '/uploads/', filename);
+  // res.json({ filename: filename });
+  res.send(filename);
+});
+
+app.get('/image/:filename', (req, res) => {
+  const filename = req.params.filename;
+  const imagePath = path.join(__dirname, 'uploads', filename);
+  res.sendFile(imagePath);
+});
+
 app
   .route("/user")
   .get(authMiddleware.isAuth, function (req, res) {
@@ -75,10 +122,10 @@ app
   });
 
 app
-  .route("/user/:id")
+  .route("/user/:username")
   .get(authMiddleware.isAuth, function (req, res) {
     const { id } = req.params;
-    let sql = "SELECT * FROM user WHERE id = ?";
+    let sql = "SELECT * FROM user WHERE username = ?";
     con.query(sql, id, (err, response) => {
       if (err) throw err;
       const data =
@@ -86,29 +133,24 @@ app
           ? response.find((el) => el.id == id)
           : null;
       if (data) {
-        res.send({ status: "success", data: data });
+        const { password, ...other } = data
+        res.send({ status: "success", data: { ...other } });
       } else {
-        res.send({ status: "error", message: "AccountID không tồn tại." });
+        res.send({ status: "error", message: "Account không tồn tại." });
       }
     });
   })
   .put(function (req, res) {
-    let sql = `UPDATE user SET ? WHERE id = ?`;
     const { body, params } = req;
-    const { id } = params;
-    if (!body.id) {
-      res
-        .status(400)
-        .send({ status: "error", message: "id vào không tồn tại." });
-    } else {
-      con.query(sql, [body, id], function (err) {
-        if (err) {
-          res.send({ status: "error", message: err });
-        } else {
-          res.send({ status: "success", data: body });
-        }
-      });
-    }
+    const { username } = params;
+    let sql = `UPDATE user SET ? WHERE username = ?`;
+    con.query(sql, [body, username], function (err) {
+      if (err) {
+        res.send({ status: "error", message: err });
+      } else {
+        res.send({ status: "success", data: body, sql: sql });
+      }
+    });
   })
   .delete(function (req, res) {
     const { id } = req.params;
@@ -140,22 +182,6 @@ app.use("/orders", ordersRouter)
 app.use("/voucher", voucherRouter)
 app.use("/payment", paymentRouter)
 
-app.get('/chart', (req, res) => {
-  let sql =
-    `SELECT sum(ODDT.price * ODDT.quantity) AS total, brand.name 
-    FROM ksneaker.orders OD 
-    LEFT JOIN order_details ODDT ON OD.id = ODDT.order_id 
-    LEFT JOIN product ON ODDT.product_id = product.id 
-    LEFT JOIN brand ON product.brand_id = brand.id 
-    WHERE OD.status = 4 OR OD.status = 6 GROUP BY brand.name ;`
-
-  con.query(sql, (err, response) => {
-    if (err) {
-      res.send({ status: "error", message: err });
-    } else {
-      res.send({ status: "success", data: response });
-    }
-  });
-})
+app.get('/chart',)
 app.listen(port);
 console.log("Server started at http://localhost:" + port);

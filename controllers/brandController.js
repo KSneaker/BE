@@ -2,7 +2,8 @@ const { db } = require("../db");
 const con = db();
 exports.getBrand = (req, res) => {
     let sql =
-        `select distinct brand.* from brand, product where brand.id = product.brand_id`
+        // `select distinct brand.* from brand, product where brand.id = product.brand_id`
+        `select * from brand`
     con.query(sql, (err, response) => {
         if (err) {
             res.send({ status: "error", message: err });

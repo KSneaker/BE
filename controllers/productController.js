@@ -4,8 +4,8 @@ const con = db();
 
 exports.allProducts = (req, res) => {
     let sql = `
-        SELECT   product.id, product.brand_id,product.category_id, product.title,
-            product.price, product.discount, product.thumbnail, product.description,
+        SELECT   product.id, product.brand_id,product.category_id, product.title, product.import_price,
+        product.price, product.discount, product.thumbnail, product.description,
             JSON_ARRAYAGG(JSON_OBJECT('quantity', quantity, 'size', size)) AS size_quantity
         FROM product_sizes
         JOIN product ON product.id = product_sizes.product_id
@@ -49,13 +49,39 @@ exports.updateProduct = (req, res) => {
 exports.deleteProduct = (req, res) => {
     const { id } = req.params;
     let sql = `
-DELETE FROM product WHERE id ='${id}'; 
-DELETE FROM product_sizes WHERE product_id ='${id}'
+    DELETE FROM order_details WHERE product_id= '${id}';
+    DELETE FROM product_sizes WHERE product_id ='${id}';
+    DELETE FROM galery WHERE product_id ='${id}';
+    DELETE FROM product WHERE id ='${id}'; 
 `
     // console.log(id)
 
     con.query(sql, id, (err, response) => {
 
+        if (err) {
+            res.send({ status: "error", message: err });
+        } else {
+            res.send({ status: "success", data: response });
+        }
+    });
+}
+
+exports.addImageProduct = (req, res) => {
+    let sql = `INSERT INTO galery SET ? `;
+    const { body } = req;
+    console.log('body', body)
+    con.query(sql, body, function (err, result) {
+        if (err) {
+            res.send({ status: "error", message: err });
+        } else {
+            res.send({ status: "success", id: result.insertId, data: body });
+        }
+    })
+}
+
+exports.getImageProduct = (req, res) => {
+    let sql = `SELECT g.product_id, p.title, JSON_ARRAYAGG(JSON_OBJECT('thumbnail', g.thumbnail) )AS list_thumb from galery g join product p on g.product_id = p.id  GROUP BY g.product_id; `;
+    con.query(sql, (err, response) => {
         if (err) {
             res.send({ status: "error", message: err });
         } else {
@@ -93,13 +119,24 @@ exports.product = (req, res) => {
 exports.getComments = (req, res) => {
     const { id } = req.params;
     let sql = `
-    select r.*,u.fullname from reviews r
+    select r.*,u.fullname, u.avatar from reviews r
     join user u on r.user_id = u.id
     where product_id ='${id}'
 `
     // console.log(id)
 
     con.query(sql, id, (err, response) => {
+
+        if (err) {
+            res.send({ status: "error", message: err });
+        } else {
+            res.send({ status: "success", data: response });
+        }
+    });
+};
+exports.allComments = (req, res) => {
+    let sql = ` select * from reviews `
+    con.query(sql, (err, response) => {
 
         if (err) {
             res.send({ status: "error", message: err });

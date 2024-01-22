@@ -77,3 +77,14 @@ exports.checkCart = (req, res) => {
         }
     })
 };
+exports.checkStock = (req, res) => {
+    const { product_id, size } = req.body;
+    let sql = `SELECT product_id, size, quantity FROM product_sizes  where product_id = ${product_id} and size =${size};`;
+    con.query(sql, [product_id, size], function (err, result) {
+        if (err) {
+            res.send({ status: "error", message: err });
+        } else {
+            res.send({ status: "success", data: result });
+        }
+    })
+};

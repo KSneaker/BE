@@ -9,6 +9,7 @@ cartRouter.post("", cartController.postCart);
 cartRouter.post("/decrease", cartController.decreaseCart);
 cartRouter.post("/increase", cartController.increaseCart);
 cartRouter.post("/check-cart", cartController.checkCart);
+cartRouter.post("/check-stock", cartController.checkStock);
 
 module.exports = cartRouter;
 
