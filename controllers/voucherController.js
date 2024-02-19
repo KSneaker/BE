@@ -53,3 +53,15 @@ exports.putVoucher = (req, res) => {
         }
     });
 };
+exports.deleteVoucher = (req, res) => {
+    const { id } = req.params;
+    let sql = `DELETE FROM voucher WHERE id ='${id}'`
+    // console.log(id)
+    con.query(sql, id, (err, response) => {
+        if (err) {
+            res.send({ status: "error", message: err });
+        } else {
+            res.send({ status: "success", data: response });
+        }
+    });
+};

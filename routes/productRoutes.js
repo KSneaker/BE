@@ -5,6 +5,7 @@ const productController = require("../controllers/productController");
 
 productRouter.get("/comments", productController.allComments);
 productRouter.get("/comments/:id", productController.getComments);
+productRouter.post("/comment", productController.postComment);
 productRouter.get("", productController.allProducts);
 productRouter.post("", authMiddleware.isAuth, productController.addProduct);
 productRouter.post("/image", productController.addImageProduct);

@@ -147,6 +147,18 @@ exports.getComments = (req, res) => {
         }
     });
 };
+exports.postComment = (req, res) => {
+    const { body } = req;
+    console.log(body)
+    let sql = `INSERT INTO reviews SET ? `;
+    con.query(sql, body, function (err, result) {
+        if (err) {
+            res.send({ status: "error", message: err });
+        } else {
+            res.send({ status: "success", data: body });
+        }
+    })
+};
 exports.allComments = (req, res) => {
     let sql = ` select * from reviews `
     con.query(sql, (err, response) => {
