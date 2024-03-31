@@ -25,8 +25,8 @@ const paymentRouter = require("./routes/paymentRoutes");
 const fs = require('fs')
 const { promisify } = require('util')
 const unlinkAsync = promisify(fs.unlink)
-const { createServer } = require("http");
-const { Server } = require("socket.io");
+// const { createServer } = require("http");
+// const { Server } = require("socket.io");
 
 
 app.use(express.json());
@@ -39,28 +39,30 @@ app.use(bodyParser.urlencoded({ extended: true, limit: '200mb' }));
 app.use(bodyParser.json({ limit: '200mb' }));
 app.use(cors());
 
-const httpServer = createServer(app);
-const io = new Server(httpServer, {
-  cors: {
-    origin: 'http://localhost:3000',
-    methods: ["GET", "POST"]
-  }
-  /* options */
-});
+// const httpServer = createServer(app);
+// const io = new Server(httpServer, {
+//   cors: {
+//     origin: 'http://localhost:3000',
+//     methods: ["GET", "POST"]
+//   }
+//   /* options */
+// });
 
-io.on("connection", (socket) => {
-  console.log(`connected: ${socket.id}`)
-  socket.on("disconnect", () => {
-    console.log("disconnect", socket.id)
-  })
-});
+// io.on("connection", (socket) => {
+//   console.log(`connected: ${socket.id}`)
+//   socket.on("disconnect", () => {
+//     console.log("disconnect", socket.id)
+//   })
+// });
 
-httpServer.listen(80, function () {
-  console.log("CORS-enabled web server listening on port 80");
-});
-// app.listen(80, function () {
+// httpServer.listen(80, function () {
 //   console.log("CORS-enabled web server listening on port 80");
 // });
+
+
+app.listen(80, function () {
+  console.log("CORS-enabled web server listening on port 80");
+});
 
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
