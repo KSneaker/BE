@@ -7,7 +7,7 @@ exports.db = () => {
     port: 3306,
     user: "root",
     password: "password",
-    database: "KSneaker",
+    database: "ksneaker",
     multipleStatements: true
   });
   con.connect(function (err) {
